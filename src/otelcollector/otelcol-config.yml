@@ -32,12 +32,12 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging, spanmetrics]
+      exporters: [logging, spanmetrics, influxdb]
     metrics:
       receivers: [otlp, spanmetrics]
       processors: [filter, batch]
-      exporters: [logging]
+      exporters: [logging, influxdb]
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters: [logging, influxdb]

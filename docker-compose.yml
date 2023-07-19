@@ -344,6 +344,7 @@ services:
       - OTEL_COLLECTOR_HOST
       - OTEL_COLLECTOR_PORT_GRPC
       - OTEL_COLLECTOR_PORT_HTTP
+      - OTEL_COLLECTOR_PORT=${OTEL_COLLECTOR_PORT_GRPC}
       - ENVOY_PORT
     depends_on:
       frontend:
@@ -608,10 +609,6 @@ services:
     image: jaegertracing/all-in-one
     container_name: jaeger
     command:
-      - "--memory.max-traces"
-      - "10000"
-      - "--query.base-path"
-      - "/jaeger/ui"
       - "--prometheus.server-url"
       - "http://${PROMETHEUS_ADDR}"
     deploy:
@@ -621,15 +618,38 @@ services:
     restart: unless-stopped
     ports:
       - "${JAEGER_SERVICE_PORT}"                    # Jaeger UI
-      - "4317"                           # OTLP gRPC default port
+      - "4317"
+      - 16686:16686                             
     environment:
       - COLLECTOR_OTLP_ENABLED=true
       - METRICS_STORAGE_TYPE=prometheus
+      - GRPC_STORAGE_SERVER=jaeger-influxdb:17271
+      - QUERY_HTTP_SERVER_HOST_PORT=0.0.0.0:16686
+      - ADMIN_HTTP_HOST_PORT=0.0.0.0:16687
+      - SPAN_STORAGE_TYPE=grpc-plugin
     logging: *logging
+    depends_on:
+    - jaeger-influxdb
+  
+  jaeger-influxdb:
+    image: jacobmarble/jaeger-influxdb:0.5.2
+    stop_grace_period: 10s
+    environment:
+      LOG_LEVEL: info
+      LISTEN_ADDR: :17271
+      INFLUXDB_TIMEOUT: 30s
+      # required: hostname or hostname:port
+      INFLUXDB_ADDR: eu-central-1-1.aws.cloud2.influxdata.com:443
+      # required: bucket name
+      INFLUXDB_BUCKET: opentelemetry
+      # optional: bucket name for archived traces
+      INFLUXDB_BUCKET_ARCHIVE:
+      # required
+      INFLUXDB_TOKEN: 
 
   # Grafana
   grafana:
-    image: grafana/grafana:9.4.7
+    image: grafana/grafana:latest
     container_name: grafana
     deploy:
       resources:
@@ -641,10 +661,16 @@ services:
     ports:
       - "${GRAFANA_SERVICE_PORT}"
     logging: *logging
+    environment:
+      - GF_INSTALL_PLUGINS=influxdata-flightsql-datasource
+      - INFLUX_HOST=
+      - INFLUX_TOKEN=
+      - INFLUX_ORG=
+      - INFLUX_BUCKET=
 
   # OpenTelemetry Collector
   otelcol:
-    image: otel/opentelemetry-collector-contrib:0.76.1
+    image: otel/opentelemetry-collector-contrib:0.81.0
     container_name: otel-col
     deploy:
       resources:

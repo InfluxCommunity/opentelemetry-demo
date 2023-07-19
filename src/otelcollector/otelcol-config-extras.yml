@@ -2,3 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 # extra settings to be merged into OpenTelemetry Collector configuration
 # do not delete this file
+
+exporters:
+  influxdb:
+    endpoint: https://eu-central-1-1.aws.cloud2.influxdata.com
+    bucket: opentelemetry
+    token: 
+    metrics_schema: otel-v1
+  
+
+
