@@ -5,10 +5,27 @@
 
 exporters:
   influxdb:
-    endpoint: https://eu-central-1-1.aws.cloud2.influxdata.com
-    bucket: opentelemetry
-    token: 
+    endpoint: https://${INFLUXDB_ADDR}
+    bucket: ${INFLUXDB_BUCKET}
+    token: ${INFLUXDB_TOKEN}
     metrics_schema: otel-v1
   
+connectors:
+  spanmetrics:
+    aggregation_temporality: "AGGREGATION_TEMPORALITY_DELTA"
+  servicegraph:
 
-
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [influxdb, spanmetrics, servicegraph]
+    metrics:
+      receivers: [spanmetrics, servicegraph]
+      processors: [batch]
+      exporters: [influxdb]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [influxdb]

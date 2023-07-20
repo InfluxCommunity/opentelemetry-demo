@@ -13,11 +13,16 @@ datasources:
     editable: true
     isDefault: false
     jsonData:
-      tracesToLogs:
+      tracesToLogsV2:
+        spanStartTimeShift: '1h'
+        spanEndTimeShift: '-1h'
+        tags: []
         # Field with internal link pointing to a logs data source in Grafana.
         # datasourceUid value must match the datasourceUid value of the logs data source.
-        datasourceUid: 'grafana'
-        filterByTraceID: true
-        filterBySpanID: true
+        datasourceUid: 'FlightSQL'
+        filterByTraceID: false
+        filterBySpanID: false
+        customQuery: true
+        query: 'select * from logs'
       nodeGraph:
         enabled: true

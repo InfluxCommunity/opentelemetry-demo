@@ -617,16 +617,16 @@ services:
           memory: 300M
     restart: unless-stopped
     ports:
-      - "${JAEGER_SERVICE_PORT}"                    # Jaeger UI
-      - "4317"
-      - 16686:16686                             
+      - "${JAEGER_SERVICE_PORT}"
+      - "4317"                      # Jaeger UI                
     environment:
-      - COLLECTOR_OTLP_ENABLED=true
       - METRICS_STORAGE_TYPE=prometheus
       - GRPC_STORAGE_SERVER=jaeger-influxdb:17271
+      - GRPC_STORAGE_CONNECTION_TIMEOUT=30s
       - QUERY_HTTP_SERVER_HOST_PORT=0.0.0.0:16686
       - ADMIN_HTTP_HOST_PORT=0.0.0.0:16687
       - SPAN_STORAGE_TYPE=grpc-plugin
+      - COLLECTOR_OTLP_ENABLED=true
     logging: *logging
     depends_on:
     - jaeger-influxdb
@@ -635,21 +635,21 @@ services:
     image: jacobmarble/jaeger-influxdb:0.5.2
     stop_grace_period: 10s
     environment:
-      LOG_LEVEL: info
+      LOG_LEVEL: error
       LISTEN_ADDR: :17271
       INFLUXDB_TIMEOUT: 30s
       # required: hostname or hostname:port
-      INFLUXDB_ADDR: eu-central-1-1.aws.cloud2.influxdata.com:443
+      INFLUXDB_ADDR: ${INFLUXDB_ADDR}:443
       # required: bucket name
-      INFLUXDB_BUCKET: opentelemetry
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
       # optional: bucket name for archived traces
       INFLUXDB_BUCKET_ARCHIVE:
       # required
-      INFLUXDB_TOKEN: 
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
 
   # Grafana
   grafana:
-    image: grafana/grafana:latest
+    image: jaymand13/grafana-oss:dev
     container_name: grafana
     deploy:
       resources:
@@ -663,10 +663,10 @@ services:
     logging: *logging
     environment:
       - GF_INSTALL_PLUGINS=influxdata-flightsql-datasource
-      - INFLUX_HOST=
-      - INFLUX_TOKEN=
-      - INFLUX_ORG=
-      - INFLUX_BUCKET=
+      - INFLUX_HOST=${INFLUXDB_ADDR}
+      - INFLUX_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUX_ORG=${INFLUXDB_ORG}
+      - INFLUX_BUCKET=${INFLUXDB_BUCKET}
 
   # OpenTelemetry Collector
   otelcol:
@@ -690,6 +690,11 @@ services:
     depends_on:
       - jaeger
     logging: *logging
+    environment:
+      - INFLUXDB_ADDR=${INFLUXDB_ADDR}
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
 
   # Prometheus
   prometheus:
