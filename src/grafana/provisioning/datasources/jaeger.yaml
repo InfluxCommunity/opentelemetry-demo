@@ -14,15 +14,15 @@ datasources:
     isDefault: false
     jsonData:
       tracesToLogsV2:
-        spanStartTimeShift: '1h'
-        spanEndTimeShift: '-1h'
+        spanStartTimeShift: '1m'
+        spanEndTimeShift: '-1m'
         tags: []
         # Field with internal link pointing to a logs data source in Grafana.
         # datasourceUid value must match the datasourceUid value of the logs data source.
-        datasourceUid: 'FlightSQL'
-        filterByTraceID: false
+        datasourceUid: 'InfluxDB_v1'
+        filterByTraceID: true
         filterBySpanID: false
-        customQuery: true
-        query: 'select * from logs'
+        customQuery: false
+        query: 'SELECT time, "event.name", "severity_text","severity_number" ,body, attributes FROM logs WHERE "trace_id" = ''${__span.spanId}'' AND time >= now() - 1h'
       nodeGraph:
         enabled: true

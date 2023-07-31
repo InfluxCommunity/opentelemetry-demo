@@ -2,6 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 # extra settings to be merged into OpenTelemetry Collector configuration
 # do not delete this file
+receivers:
+  jaeger:
+    protocols:
+      thrift_compact:
+      thrift_http:
 
 exporters:
   influxdb:
@@ -16,15 +21,20 @@ connectors:
   servicegraph:
 
 service:
+  telemetry:
+    logs:
+      level: debug
+      encoding: json
+
   pipelines:
     traces:
-      receivers: [otlp]
-      processors: [batch]
+      receivers: [otlp, jaeger]
       exporters: [influxdb, spanmetrics, servicegraph]
+
     metrics:
       receivers: [spanmetrics, servicegraph]
-      processors: [batch]
       exporters: [influxdb]
+
     logs:
       receivers: [otlp]
       processors: [batch]

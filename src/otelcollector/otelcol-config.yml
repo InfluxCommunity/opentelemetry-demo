@@ -11,10 +11,6 @@ receivers:
           allowed_origins:
             - "http://*"
             - "https://*"
-  jaeger:
-    protocols:
-      thrift_compact:
-      thrift_http:
 
 exporters:
   logging:
@@ -30,13 +26,11 @@ processors:
 
 connectors:
   spanmetrics:
-    aggregation_temporality: "AGGREGATION_TEMPORALITY_DELTA"
-  servicegraph:
 
 service:
   pipelines:
     traces:
-      receivers: [otlp, jaeger]
+      receivers: [otlp]
       processors: [batch]
       exporters: [logging, spanmetrics]
     metrics:
