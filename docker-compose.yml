@@ -650,7 +650,7 @@ services:
 
   # Grafana
   grafana:
-    image: jaymand13/grafana-oss:dev
+    image: jaymand13/grafana-oss:dev2
     container_name: grafana
     deploy:
       resources:
