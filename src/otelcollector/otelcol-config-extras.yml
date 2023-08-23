@@ -8,6 +8,7 @@ receivers:
       thrift_compact:
       thrift_http:
 
+
 exporters:
   influxdb:
     endpoint: https://${INFLUXDB_ADDR}
@@ -23,7 +24,7 @@ connectors:
 service:
   telemetry:
     logs:
-      level: debug
+      level: error
       encoding: json
 
   pipelines:
@@ -32,8 +33,8 @@ service:
       exporters: [influxdb, spanmetrics, servicegraph]
 
     metrics:
-      receivers: [spanmetrics, servicegraph]
-      exporters: [influxdb]
+      receivers: [otlp, spanmetrics, servicegraph]
+      exporters: [influxdb, prometheus]
 
     logs:
       receivers: [otlp]

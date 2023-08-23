@@ -607,11 +607,8 @@ services:
   # ********************
   # Jaeger
   jaeger:
-    image: jaegertracing/all-in-one
+    image: jaegertracing/jaeger-query:latest
     container_name: jaeger
-    command:
-      - "--prometheus.server-url"
-      - "http://${PROMETHEUS_ADDR}"
     deploy:
       resources:
         limits:
@@ -619,21 +616,19 @@ services:
     restart: unless-stopped
     ports:
       - "${JAEGER_SERVICE_PORT}"
-      - "4317"                      # Jaeger UI                
+      - "4317"           
     environment:
-      - METRICS_STORAGE_TYPE=prometheus
       - GRPC_STORAGE_SERVER=jaeger-influxdb:17271
       - GRPC_STORAGE_CONNECTION_TIMEOUT=30s
       - QUERY_HTTP_SERVER_HOST_PORT=0.0.0.0:16686
       - ADMIN_HTTP_HOST_PORT=0.0.0.0:16687
       - SPAN_STORAGE_TYPE=grpc-plugin
-      - COLLECTOR_OTLP_ENABLED=true
     logging: *logging
     depends_on:
     - jaeger-influxdb
   
   jaeger-influxdb:
-    image: jacobmarble/jaeger-influxdb:0.5.2
+    image: jacobmarble/jaeger-influxdb:latest
     stop_grace_period: 10s
     environment:
       LOG_LEVEL: error
@@ -671,7 +666,7 @@ services:
 
   # OpenTelemetry Collector
   otelcol:
-    image: otel/opentelemetry-collector-contrib:0.81.0
+    image: otel/opentelemetry-collector-contrib:0.82.0
     container_name: otel-col
     build:
       context: ./
@@ -871,14 +866,4 @@ services:
       retries: 60
     ports:
       - 5432
-  
-  telegraf:
-    image: telegraf:latest
-    volumes:
-      - ./src/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
-    environment:
-      - INFLUXDB_ADDR=${INFLUXDB_ADDR}
-      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
-      - INFLUXDB_ORG=${INFLUXDB_ORG}
-      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
-      - PROMETHEUS_ADDR=${PROMETHEUS_ADDR}
+

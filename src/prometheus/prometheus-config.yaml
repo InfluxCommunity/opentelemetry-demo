@@ -15,5 +15,4 @@ scrape_configs:
   static_configs:
   - targets:
     - 'otelcol:8888'
-remote_write:
-  - url: "http://telegraf:8080/telegraf"
+
